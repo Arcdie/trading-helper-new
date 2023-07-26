@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserModel {
+  user_id Int @default(autoincrement()) @id
+  name String
+  email String @unique
+  password String
+  telegram_user_id String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("users")
+}
+
+model InstrumentModel {
+  instrument_id Int @default(autoincrement()) @id
+  name String @unique
+  price Float @db.DoublePrecision
+  is_active Boolean @default(true)
+  is_futures Boolean
+  price_precision Int @db.SmallInt
+  tick_size Float @db.DoublePrecision
+  step_size Float @db.DoublePrecision
+  average_volume_for_last_24_hours Int
+  average_volume_for_last_15_minutes Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  candles_5m Candle5mModel[]
+  candles_1h Candle1hModel[]
+  candles_1d Candle1dModel[]
+
+  @@map("instruments")
+}
+
+model Candle5mModel {
+  candle_id Int @default(autoincrement()) @id
+  instrument_id Int
+  instrument InstrumentModel @relation(fields: [instrument_id], references: [instrument_id])
+
+  // open, close, log, high
+  data Float[] @db.DoublePrecision
+  volume BigInt
+  time DateTime
+  created_at DateTime @default(now())
+
+  @@map("candles_5m")
+  @@index([instrument_id, time])
+}
+
+model Candle1hModel {
+  candle_id Int @default(autoincrement()) @id
+  instrument_id Int
+  instrument InstrumentModel @relation(fields: [instrument_id], references: [instrument_id])
+
+  // open, close, log, high
+  data Float[] @db.DoublePrecision
+  volume BigInt
+  time DateTime
+  created_at DateTime @default(now())
+
+  @@map("candles_1h")
+  @@index([instrument_id, time])
+}
+
+model Candle1dModel {
+  candle_id Int @default(autoincrement()) @id
+  instrument_id Int
+  instrument InstrumentModel @relation(fields: [instrument_id], references: [instrument_id])
+
+  // open, close, log, high
+  data Float[] @db.DoublePrecision
+  volume BigInt
+  time DateTime
+  created_at DateTime @default(now())
+
+  @@map("candles_1d")
+  @@index([instrument_id, time])
+}
